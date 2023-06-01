@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import './App.css';
 
 const AppLink = () => {
@@ -19,7 +20,47 @@ const Logo = () => {
   );
 }
 
+const Title = ({ content }) => <h1 id="title">{content}</h1>;
+function Component ({ index, title, link, onClick, isSelected }) {
+  return (
+    <div className={isSelected ? 'component green' : 'component'}>
+      <p><a href={link} target='_blank' rel='nonopener noreferrer'>{title}</a></p>
+      <button onClick={() => onClick(title, index)}>Learn {title}</button>
+    </div>
+  )
+}
+
+function Counter({ count, increment }) {
+  return(
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => increment(count => count +1)}>Click</button>
+    </div>
+  )
+}
+
+function Form({ onSubmit, onChange }) {
+  return(
+    <>
+      <form onSubmit={onSubmit} className='flex space-betwween'>
+        <input type='text' onChange={onChange} name='title' placeholder='Title'></input>
+        <input type='text' onChange={onChange} name='link' placeholder='Link'></input>
+        <button type='submit'>Add</button>
+      </form>
+    </>
+  )
+}
+
+const Result = ({ result }) => <h1 className='result'>{result}</h1>;
+
 function App() {
+  const libraries = [
+    {title: "React", link: "https://reactjs.org/"},
+    {title: "Vue", link: "https://vuejs.org/"},
+    {title: "Angular", link: "https://angular.io/"}
+  ];
+  const [count1, setCount1] = useState(0);
+  const [count2, setCount2] = useState(0);
   let siwtichColor = true;
   const handleOnClick = () => {
     const pathList = document.querySelectorAll('#logo *');
@@ -35,15 +76,49 @@ function App() {
       siwtichColor = true;
     }
   }
+  const [index, setIndex] = useState(0);
+  const [title, setTitle] = useState("React");
+  const handleOnClickBtn = (value, index) => {
+    setTitle(value);
+    setIndex(index);
+  };
+  const [input, setInput] = useState(null);
+  const [items, setItems] = useState(libraries);
+  const handleOnChange = e => setInput({...input, [e.target.name]: e.target.value});
+  const handleOnSubmit = e => {
+    e.preventDefault();
+    if (!input?.title || !input?.link) {
+      // message
+      return false;
+    }
+    setItems([input, ...items]);
+    setInput(null);
+  };
+  const [result, setResult] = useState(0);
+  useEffect(() => {
+    document.title = `Learn ${title}`;
+  }, [title]);
+
+  useEffect(() => setResult(count1 + count2), [count1, count2]);
   return (
     <div className="App">
       <header className="App-header">
+        <Title content={title} />
         <Logo />
+        <Form onChange={handleOnChange} onSubmit={handleOnSubmit} />
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
         <AppLink />
+        {items.map((lib, i) => {
+          return(<Component isSelected={index === i} key={lib.link} index={i} title={lib.title} link={lib.link} onClick={handleOnClickBtn} />);
+        })}
         <button onClick={() => handleOnClick()}>Switch color</button>
+
+        <Result result={result}/>
+        <Counter count={count1} increment={setCount1} />
+        <Counter count={count2} increment={setCount2} />
+
       </header>
     </div>
   );
